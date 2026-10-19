@@ -8,7 +8,7 @@ const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", 
 const TAG_MS = 24 * 60 * 60 * 1000;
 const PAPIERKORB = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>`;
 const SCHNELLAUSWAHL = [
-  ["Futter", "n-futter"], ["Api Life Var", "n-varroa"], ["VarroMed", "n-varroa"],
+  ["Futter", "n-futter"], ["Api Life Var", "n-medikamente"], ["VarroMed", "n-medikamente"],
   ["Durchsicht", "n-text"], ["Futterkranzprobe", "n-text"],
 ];
 
@@ -126,7 +126,7 @@ function renderKopf() {
   const eintraege = [...volk.eintraege].sort(nachDatum).reverse();
   const futterSumme = eintraege.reduce((s, e) => s + zahl(e.futter), 0);
   const gewicht = eintraege.find((e) => e.gewicht);
-  const varroa = eintraege.find((e) => e.varroa);
+  const medikament = eintraege.find((e) => e.medikament);
   $("kopf").innerHTML = `
     <div class="head">
       <div><h2>${esc(volk.name)}</h2><small>${esc(volk.standort.split(",")[0] || "Kein Standort angegeben")}</small></div>
@@ -135,7 +135,7 @@ function renderKopf() {
     <div class="tiles">
       <div class="tile"><b>${formatZahl(futterSumme)} ${esc(volk.einheit)}</b><span>Futter gesamt</span></div>
       <div class="tile"><b>${gewicht ? esc(gewicht.gewicht) + " kg" : "–"}</b><span>${gewicht ? "Gewicht am " + kurzDatum(gewicht.datum) : "Kein Gewicht"}</span></div>
-      <div class="tile"><b>${varroa ? kurzDatum(varroa.datum) : "–"}</b><span>Letzte Varroa-Maßnahme</span></div>
+      <div class="tile"><b>${medikament ? kurzDatum(medikament.datum) : "–"}</b><span>Letzter Medikamenteneinsatz</span></div>
     </div>`;
 }
 
@@ -151,7 +151,7 @@ function renderFormular() {
       <label class="full">Beobachtung / Arbeit<input id="n-text" autocomplete="off"></label>
       <label>Gefüttert (${esc(volk.einheit)})<input id="n-futter" inputmode="decimal"></label>
       <label>Gewicht (kg)<input id="n-gewicht" inputmode="decimal"></label>
-      <label class="full">Maßnahme Varroa<input id="n-varroa" placeholder="z. B. 15ml oder 1 Streifen" autocomplete="off"></label>
+      <label class="full">Medikamenteneinsatz<input id="n-medikamente" placeholder="z. B. 15ml oder 1 Streifen" autocomplete="off"></label>
     </div>
     <div class="row"><button class="pri" data-aktion="eintragSpeichern">Eintrag speichern</button></div>`;
 }
@@ -183,19 +183,19 @@ function renderListe() {
   const volk = aktivesVolk();
   const eintraege = [...volk.eintraege].sort(nachDatum).reverse();
   const zeile = (e) => {
-    const typ = e.varroa ? "v" : e.gewicht ? "g" : e.futter ? "f" : "";
+    const typ = e.medikament ? "m" : e.gewicht ? "g" : e.futter ? "f" : "";
     return `<li class="ent ${typ}">
       <div class="eh"><b>${formatDatum(e.datum)}</b>
         <button class="del" data-aktion="eintragLoeschen" data-id="${e.id}" aria-label="Eintrag vom ${formatDatum(e.datum)} löschen">✕</button></div>
       ${e.text ? `<div>${esc(e.text)}</div>` : ""}
       <div class="tags">
         ${e.futter ? `<span>${esc(e.futter)} ${esc(volk.einheit)}</span>` : ""}
-        ${e.varroa ? `<span>${esc(e.varroa)}</span>` : ""}
+        ${e.medikament ? `<span>${esc(e.medikament)}</span>` : ""}
         ${e.gewicht ? `<span>${esc(e.gewicht)} kg</span>` : ""}
       </div></li>`;
   };
   $("liste").innerHTML = `<h2>Stockkarte</h2>
-    <div class="legend"><span><i class="f"></i>Futter</span><span><i class="v"></i>Varroa</span><span><i class="g"></i>Gewicht</span></div>
+    <div class="legend"><span><i class="f"></i>Futter</span><span><i class="m"></i>Medikament</span><span><i class="g"></i>Gewicht</span></div>
     ${eintraege.length ? `<ul class="list">${eintraege.map(zeile).join("")}</ul>` : `<small>Noch keine Einträge.</small>`}`;
 }
 
@@ -270,13 +270,13 @@ const aktionen = {
     const datum = $("n-datum").value;
     const text = $("n-text").value.trim();
     const futter = $("n-futter").value.trim();
-    const varroa = $("n-varroa").value.trim();
+    const medikament = $("n-medikamente").value.trim();
     const gewicht = $("n-gewicht").value.trim();
     if (!datum) return alert("Bitte ein Datum angeben.");
-    if (!text && !futter && !varroa && !gewicht) return alert("Bitte mindestens eine Angabe machen.");
+    if (!text && !futter && !medikament && !gewicht) return alert("Bitte mindestens eine Angabe machen.");
     aendereAnsicht(() => {
       aktivesVolk().eintraege.push({
-        id: "e" + Date.now(), datum, text: text || (futter ? "Futter" : ""), futter, varroa, gewicht,
+        id: "e" + Date.now(), datum, text: text || (futter ? "Futter" : ""), futter, medikament, gewicht,
       });
     });
   },
