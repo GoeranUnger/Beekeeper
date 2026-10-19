@@ -351,4 +351,21 @@ function dateiImportieren(feld) {
   feld.value = "";
 }
 
+function allesLoeschen() {
+
+    if (!confirm("Alle lokalen Daten löschen?")) return;
+
+    localStorage.removeItem(STORAGE_KEY);
+
+    daten = {
+        aktiv: 0,
+        voelker: []
+    };
+
+    renderAlles();
+
+    alert("Daten gelöscht");
+}
+
+
 renderAlles();
