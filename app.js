@@ -306,6 +306,40 @@ const aktionen = {
 
   importieren() { $("datei").click(); },
 
+  excelExport() {
+
+    const zeilen = [
+        ["Volk", "Datum", "Text", "Futter", "Medikament", "Gewicht"]
+    ];
+
+    daten.voelker.forEach(volk => {
+        volk.eintraege.forEach(e => {
+            zeilen.push([
+                volk.name,
+                e.datum,
+                e.text || "",
+                e.futter || "",
+                e.medikament || "",
+                e.gewicht || ""
+            ]);
+        });
+    });
+
+    const csv = zeilen
+        .map(z => z.map(f => `"${String(f).replace(/"/g,'""')}"`).join(";"))
+        .join("\n");
+
+    const blob = new Blob(
+        ["\uFEFF" + csv],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `stockkarte-${heute()}.csv`;
+    link.click();
+},
+
   zuruecksetzen() {
     if (!confirm("Alle Änderungen verwerfen und die Ausgangsdaten laden?")) return;
     aendereAnsicht(() => { daten = erzeugeAusgangsdaten(); });
@@ -366,6 +400,5 @@ function allesLoeschen() {
 
     alert("Daten gelöscht");
 }
-
 
 renderAlles();
