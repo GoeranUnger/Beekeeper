@@ -315,101 +315,6 @@ const aktionen = {
 
   importieren() { $("datei").click(); },
 
-pdfBericht() {
-
-    let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Stockkarten-Bericht</title>
-
-        <style>
-            body{
-                font-family: Arial, sans-serif;
-                margin:20px;
-            }
-
-            table{
-                width:100%;
-                border-collapse:collapse;
-            }
-
-            th, td{
-                border:1px solid #ccc;
-                padding:6px;
-                text-align:left;
-            }
-
-            th{
-                background:#f0f0f0;
-            }
-
-            .druck{
-                margin-bottom:20px;
-                padding:10px 15px;
-                font-size:16px;
-            }
-
-            @media print{
-                .druck{
-                    display:none;
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-
-    <button class="druck" onclick="window.print()">
-        PDF erstellen / Drucken
-    </button>
-
-    <h1>Stockkarten-Bericht</h1>
-
-    <table>
-        <tr>
-            <th>Volk</th>
-            <th>Datum</th>
-            <th>Eintrag</th>
-            <th>Futter</th>
-            <th>Medikament</th>
-            <th>Gewicht</th>
-        </tr>
-    `;
-
-        daten.voelker.forEach(volk => {
-
-        volk.eintraege
-            .sort((a,b) => a.datum.localeCompare(b.datum))
-            .forEach(e => {
-
-                html += `
-                <tr>
-                    <td>${volk.name}</td>
-                    <td>${e.datum}</td>
-                    <td>${e.text || ""}</td>
-                    <td>${e.futter || ""}</td>
-                    <td>${e.medikament || ""}</td>
-                    <td>${e.gewicht || ""}</td>
-                </tr>
-                `;
-            });
-    });
-
-    html += `
-    </table>
-    </body>
-    </html>
-    `;
-    const win = window.open("", "_blank");
-
-    if (win) {
-        win.document.write(html);
-        win.document.close();
-    }
-},
-
   zuruecksetzen() {
     if (!confirm("Alle Änderungen verwerfen und die Ausgangsdaten laden?")) return;
     aendereAnsicht(() => { daten = erzeugeAusgangsdaten(); });
@@ -436,6 +341,7 @@ document.addEventListener("change", (ev) => {
     speichern();
   }
 });
+
 
 function dateiImportieren(feld) {
   const leser = new FileReader();
@@ -472,3 +378,4 @@ function allesLoeschen() {
 }
 
 renderAlles();
+

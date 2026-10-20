@@ -447,3 +447,40 @@ summary {
 #datei {
     display: none;
 }
+
+@media print {
+
+    .tabs,
+    button,
+    .chips,
+    .segment {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+}
+
+.bericht {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bericht th,
+.bericht td {
+    border: 1px solid var(--line);
+    padding: 6px;
+    text-align: left;
+}
+
+.bericht th {
+    background: var(--bg);
+}
