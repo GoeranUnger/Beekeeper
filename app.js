@@ -313,6 +313,43 @@ const aktionen = {
     link.click();
   },
 
+  excelExport() {
+
+    const datenblatt = [];
+
+    daten.voelker.forEach(volk => {
+
+        volk.eintraege.forEach(e => {
+
+            datenblatt.push({
+                Volk: volk.name,
+                Datum: e.datum,
+                Eintrag: e.text || "",
+                Futter: e.futter || "",
+                Medikament: e.medikament || "",
+                Gewicht: e.gewicht || ""
+            });
+
+        });
+
+    });
+
+    const ws = XLSX.utils.json_to_sheet(datenblatt);
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "Stockkarte"
+    );
+
+    XLSX.writeFile(
+        wb,
+        `stockkarte-${heute()}.xlsx`
+    );
+},
+
   importieren() { $("datei").click(); },
 
   zuruecksetzen() {
