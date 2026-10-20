@@ -181,7 +181,8 @@ function renderDiagramm() {
 
 function renderListe() {
   const volk = aktivesVolk();
-  const eintraege = [...volk.eintraege].sort(nachDatum).reverse();
+  const alleEintraege = [...volk.eintraege].sort(nachDatum).reverse();
+  const eintraege = alleEintraege.slice(0, 5);
   const zeile = (e) => {
     const typ = e.medikament ? "m" : e.gewicht ? "g" : e.futter ? "f" : "";
     return `<li class="ent ${typ}">
@@ -194,9 +195,22 @@ function renderListe() {
         ${e.gewicht ? `<span>${esc(e.gewicht)} kg</span>` : ""}
       </div></li>`;
   };
-  $("liste").innerHTML = `<h2>Stockkarte</h2>
-    <div class="legend"><span><i class="f"></i>Futter</span><span><i class="m"></i>Medikament</span><span><i class="g"></i>Gewicht</span></div>
-    ${eintraege.length ? `<ul class="list">${eintraege.map(zeile).join("")}</ul>` : `<small>Noch keine Einträge.</small>`}`;
+  $("liste").innerHTML = `
+    <h2>
+        Stockkarte
+        <small>(${alleEintraege.length} Einträge, Anzeige der letzten 5)</small>
+    </h2>
+    <div class="legend"><span><i 
+      class="f"></i>Futter</span><span><i 
+      class="m"></i>Medikament</span><span><i 
+      class="g"></i>Gewicht</span>
+    </div>
+    ${eintraege.length ? `<ul class="list">${eintraege.map(zeile).join("")}</ul>` : `<small>Noch keine Einträge.</small>`}
+    <div class="row">
+        <button data-aktion="berichtAnzeigen">
+          Komplette Historie anzeigen
+        </button>
+    </div>`;
 }
 
 function renderStamm() {
@@ -218,14 +232,14 @@ function renderAlles() {
   if (daten.aktiv >= daten.voelker.length) daten.aktiv = 0;
   ui.auswahl = null;
   renderTabs();
-  renderKopf();
+  renderKopf(); 
   const vorhanden = Boolean(aktivesVolk());
   ["formular", "diagramm", "liste", "stamm"].forEach((id) => { $(id).hidden = !vorhanden; });
   if (!vorhanden) return;
+  renderStamm();
   renderFormular();
   renderDiagramm();
   renderListe();
-  renderStamm();
 }
 
 /* ========== Aktionen ========== */
@@ -306,39 +320,83 @@ const aktionen = {
 
   importieren() { $("datei").click(); },
 
-  excelExport() {
+  berichtAnzeigen() {
 
-    const zeilen = [
-        ["Volk", "Datum", "Text", "Futter", "Medikament", "Gewicht"]
-    ];
+      let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <meta charset="utf-8">
+          <title>Stockkarten-Bericht</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 20px;
+              }
 
-    daten.voelker.forEach(volk => {
-        volk.eintraege.forEach(e => {
-            zeilen.push([
-                volk.name,
-                e.datum,
-                e.text || "",
-                e.futter || "",
-                e.medikament || "",
-                e.gewicht || ""
-            ]);
-        });
-    });
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+              }
 
-    const csv = zeilen
-        .map(z => z.map(f => `"${String(f).replace(/"/g,'""')}"`).join(";"))
-        .join("\n");
+              th, td {
+                  border: 1px solid #ccc;
+                  padding: 8px;
+                  text-align: left;
+              }
 
-    const blob = new Blob(
-        ["\uFEFF" + csv],
-        { type: "text/csv;charset=utf-8;" }
-    );
+              th {
+                  background: #f2f2f2;
+              }
+          </style>
+      </head>
+      <body>
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `stockkarte-${heute()}.csv`;
-    link.click();
-},
+      <h1>Stockkarten-Bericht</h1>
+
+      <table>
+          <tr>
+              <th>Volk</th>
+              <th>Datum</th>
+              <th>Eintrag</th>
+              <th>Futter</th>
+              <th>Medikament</th>
+              <th>Gewicht</th>
+          </tr>
+      `;
+
+      daten.voelker.forEach(volk => {
+          volk.eintraege.forEach(e => {
+              html += `
+              <tr>
+                  <td>${volk.name}</td>
+                  <td>${e.datum}</td>
+                  <td>${e.text || ""}</td>
+                  <td>${e.futter || ""}</td>
+                  <td>${e.medikament || ""}</td>
+                  <td>${e.gewicht || ""}</td>
+              </tr>
+              `;
+          });
+      });
+
+      html += `
+      </table>
+      </body>
+      </html>
+      `;
+
+      const win = window.open("", "_blank");
+
+      if (win) {
+          win.document.write(html);
+          win.document.close();
+      }
+  },
+
+  importieren() {
+      $("datei").click();
+  },
 
   zuruecksetzen() {
     if (!confirm("Alle Änderungen verwerfen und die Ausgangsdaten laden?")) return;
